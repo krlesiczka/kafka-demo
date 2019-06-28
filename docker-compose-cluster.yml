@@ -1,0 +1,85 @@
+version: '2'
+
+services:
+  zookeeper:
+    container_name: cluster-zookeeper
+    image: 'bitnami/zookeeper'
+    ports:
+      - '2181:2181'
+    volumes:
+      - 'zookeeper_data:/bitnami'
+    networks:
+      - cluster-internal
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka-1:
+    container_name: cluster-kafka1
+    image: 'bitnami/kafka'
+    ports:
+      - '9092'
+    volumes:
+      - 'kafka1_data:/bitnami'
+    networks:
+      - cluster-internal
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+  kafka-2:
+    container_name: cluster-kafka2
+    image: 'bitnami/kafka'
+    ports:
+      - '9092'
+    volumes:
+      - 'kafka2_data:/bitnami'
+    networks:
+      - cluster-internal
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+  kafka-3:
+    container_name: cluster-kafka3
+    image: 'bitnami/kafka'
+    ports:
+      - '9092'
+    volumes:
+      - 'kafka3_data:/bitnami'
+    networks:
+      - cluster-internal
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+  php:
+    container_name: cluster-php
+    build:
+      context: .
+      dockerfile: php/Dockerfile
+    volumes:
+      - ./php/examples/:/var/www/html/
+    networks:
+      - cluster-internal
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka1_data:
+    driver: local
+  kafka2_data:
+    driver: local
+  kafka3_data:
+    driver: local
+
+networks:
+  cluster-internal:
+    driver: bridge

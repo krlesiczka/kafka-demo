@@ -1,0 +1,1 @@
+Environment and code examples for discussion about Kafka and rdkafka.
